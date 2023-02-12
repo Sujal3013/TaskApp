@@ -1,12 +1,20 @@
 package com.example.taskdone
 
 import android.content.Intent
+import android.graphics.Bitmap
+import android.graphics.BitmapFactory
+import android.graphics.Canvas
+import android.graphics.Color
+import android.graphics.Matrix
+import android.graphics.Paint
 import androidx.appcompat.app.AppCompatActivity
 import android.os.Bundle
 import android.view.Menu
 import android.view.MenuItem
 import androidx.lifecycle.Observer
+import androidx.recyclerview.widget.ItemTouchHelper
 import androidx.recyclerview.widget.LinearLayoutManager
+import androidx.recyclerview.widget.RecyclerView
 import com.example.taskdone.Database.todoDatabase
 import com.example.taskdone.adapter.Todoadapter
 import com.example.taskdone.modal.TodoModel
@@ -14,10 +22,10 @@ import kotlinx.android.synthetic.main.activity_main.*
 
 class MainActivity : AppCompatActivity() {
 
-    val list= arrayListOf<TodoModel>()
-    var adapter=Todoadapter(list)
+    val list = arrayListOf<TodoModel>()
+    var adapter = Todoadapter(list)
 
-    val db by lazy{
+    val db by lazy {
         todoDatabase.getDatabase(this)
     }
 
@@ -26,11 +34,13 @@ class MainActivity : AppCompatActivity() {
         setContentView(R.layout.activity_main)
         setSupportActionBar(toolbar)
         todoRv.apply {
-            layoutManager=LinearLayoutManager(this@MainActivity)
-            adapter=this@MainActivity.adapter
+            layoutManager = LinearLayoutManager(this@MainActivity)
+            adapter = this@MainActivity.adapter
         }
+
+        initswipe()
         db.todoDao().getTask().observe(this, Observer {
-            if(it.isNullOrEmpty()){
+            if (it.isNullOrEmpty()) {
                 list.clear()
                 list.addAll(it)
                 adapter.notifyDataSetChanged()
@@ -38,16 +48,107 @@ class MainActivity : AppCompatActivity() {
         })
     }
 
+    fun initswipe() {
+        val simpleitemTouchCallback = object :
+            ItemTouchHelper.SimpleCallback(0, ItemTouchHelper.LEFT or ItemTouchHelper.RIGHT) {
+            override fun onMove(
+                recyclerView: RecyclerView,
+                viewHolder: RecyclerView.ViewHolder,
+                target: RecyclerView.ViewHolder
+            ): Boolean = false
+
+            override fun onChildDraw(
+                canvas: Canvas,
+                recyclerView: RecyclerView,
+                viewHolder: RecyclerView.ViewHolder,
+                dX: Float,
+                dY: Float,
+                actionState: Int,
+                isCurrentlyActive: Boolean
+            ) {
+
+                if (actionState == ItemTouchHelper.ACTION_STATE_SWIPE) {
+                    val itemView = viewHolder.itemView
+                    val paint = Paint()
+                    val matrix = Matrix()
+                    val icon: Bitmap
+
+                    if (dX > 0) {
+                        icon = BitmapFactory.decodeResource(resources, R.drawable.check)
+                        paint.color = Color.parseColor("#54B435")
+
+                        canvas.drawRect(
+                            itemView.left.toFloat(),
+                            itemView.top.toFloat(),
+                            itemView.left.toFloat() + dX, itemView.bottom.toFloat(), paint
+                        )
+                        @Suppress("DEPRECATION")
+                        canvas.drawBitmap(
+                            icon,
+                            itemView.left.toFloat(),
+                            itemView.top.toFloat() + (itemView.bottom.toFloat() - itemView.top.toFloat() - icon.height.toFloat()) / 2,
+                            paint
+                        )
+                    } else {
+                        icon = BitmapFactory.decodeResource(resources, R.drawable.cancel)
+
+                        paint.color = Color.parseColor("#D32F2F")
+
+                        canvas.drawRect(
+                            itemView.right.toFloat() + dX, itemView.top.toFloat(),
+                            itemView.right.toFloat(), itemView.bottom.toFloat(), paint
+                        )
+
+                        canvas.drawBitmap(
+                            icon,
+                            itemView.right.toFloat() - icon.width,
+                            itemView.top.toFloat() + (itemView.bottom.toFloat() - itemView.top.toFloat() - icon.height.toFloat()) / 2,
+                            paint
+                        )
+                    }
+                    viewHolder.itemView.translationX = dX
+
+
+                } else {
+                    super.onChildDraw(
+                        canvas,
+                        recyclerView,
+                        viewHolder,
+                        dX,
+                        dY,
+                        actionState,
+                        isCurrentlyActive
+                    )
+                }
+            }
+
+            override fun onSwiped(viewHolder: RecyclerView.ViewHolder, direction: Int) {
+                val position = viewHolder.absoluteAdapterPosition
+
+                if (direction == ItemTouchHelper.LEFT) {
+                    //DELETE
+                    db.todoDao().deleteTask(adapter.getItemId(position))
+                } else if (direction == ItemTouchHelper.RIGHT) {
+                    //FINISH
+                    db.todoDao().finishedTask(adapter.getItemId(position))
+                }
+            }
+
+        }
+        val itemTouchHelper=ItemTouchHelper(simpleitemTouchCallback)
+        itemTouchHelper.attachToRecyclerView(todoRv)
+    }
+
     override fun onCreateOptionsMenu(menu: Menu?): Boolean {
-        menuInflater.inflate(R.menu.main_menu,menu)
+        menuInflater.inflate(R.menu.main_menu, menu)
 
         return super.onCreateOptionsMenu(menu)
     }
 
     override fun onOptionsItemSelected(item: MenuItem): Boolean {
-        when(item.itemId){
-            R.id.history->{
-                startActivity(Intent(this,Historyacitivity::class.java))
+        when (item.itemId) {
+            R.id.history -> {
+                startActivity(Intent(this, Historyacitivity::class.java))
             }
         }
         return super.onOptionsItemSelected(item)

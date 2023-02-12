@@ -7,6 +7,7 @@
     <color name="teal_700">#FFF2F2</color>
     <color name="black">#FF000000</color>
     <color name="white">#FFFFFFFF</color>
+    <color name="green">#54B435</color>
 
     <array name="random_color">
         <item name="red_400" type="color">#e84e40</item>

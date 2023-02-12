@@ -14,6 +14,11 @@ import androidx.room.Room
 import java.util.*
 import kotlinx.android.synthetic.main.activity_task.*
 import com.example.taskdone.Database.todoDatabase
+import com.example.taskdone.modal.TodoModel
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.GlobalScope
+import kotlinx.coroutines.launch
+import kotlinx.coroutines.withContext
 import java.text.SimpleDateFormat
 
 
@@ -57,6 +62,29 @@ class TaskActivity : AppCompatActivity(), View.OnClickListener {
             R.id.timeedt ->{
                 setTimeListener()
             }
+            R.id.save->{
+                saveTodo()
+            }
+        }
+    }
+    private fun saveTodo() {
+        val category = spinner.selectedItem.toString()
+        val title = titleInplay.editText?.text.toString()
+        val description = taskInplay.editText?.text.toString()
+
+        GlobalScope.launch(Dispatchers.Main) {
+            val id = withContext(Dispatchers.IO) {
+                return@withContext db.todoDao().insertTask(
+                    TodoModel(
+                        title,
+                        description,
+                        category,
+                        finalDate,
+                        finaltime
+                    )
+                )
+            }
+            finish()
         }
     }
 
