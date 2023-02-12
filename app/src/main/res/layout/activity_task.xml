@@ -167,6 +167,7 @@
 
         <Spinner
             android:layout_width="0dp"
+            android:id="@+id/spinner"
             android:layout_height="wrap_content"
             android:layout_marginEnd="15dp"
             android:layout_weight="1"
@@ -184,7 +185,10 @@
         android:id="@+id/floatingActionButton"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
+        android:layout_marginTop="300dp"
+        android:layout_marginStart="410dp"
         android:clickable="true"
+        android:elevation="10dp"
         app:srcCompat="@android:drawable/ic_menu_add" />
 
 
