@@ -24,14 +24,13 @@ class TaskActivity : AppCompatActivity(), View.OnClickListener {
     lateinit var datesetListener:DatePickerDialog.OnDateSetListener
     lateinit var timeSetListener: TimePickerDialog.OnTimeSetListener
 
+    var finalDate=0L
+    var finaltime=0L
+
     private val labels = arrayListOf("Personal","Business","Studies","Household")
 
     val db by lazy{
-        Room.databaseBuilder(
-            this,
-            todoDatabase::class.java,
-            DB_NAME
-        )
+        todoDatabase.getDatabase(this)
     }
 
     override fun onCreate(savedInstanceState: Bundle?) {
@@ -80,6 +79,7 @@ class TaskActivity : AppCompatActivity(), View.OnClickListener {
     private fun updateTime() {
         val myformat = "h:mm a"
         val sdf=SimpleDateFormat(myformat)
+        finaltime=myCalender.time.time
         Dateedt.setText(sdf.format(myCalender.time))
     }
 
@@ -106,6 +106,7 @@ class TaskActivity : AppCompatActivity(), View.OnClickListener {
         //TUE ,8 JAN 2023
         val myformat = "EEE, d MMM yyyy"
         val sdf=SimpleDateFormat(myformat)
+        finalDate=myCalender.time.time
         Dateedt.setText(sdf.format(myCalender.time))
         timeedt.visibility=View.VISIBLE
     }
