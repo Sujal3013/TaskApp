@@ -42,10 +42,10 @@ class MainActivity : AppCompatActivity() {
             layoutManager = LinearLayoutManager(this@MainActivity)
             adapter = this@MainActivity.adapter
         }
-
         initswipe()
+
         db.todoDao().getTask().observe(this, Observer {
-            if (it.isNullOrEmpty()) {
+            if (!it.isNullOrEmpty()) {
                 list.clear()
                 list.addAll(it)
                 adapter.notifyDataSetChanged()
@@ -59,7 +59,9 @@ class MainActivity : AppCompatActivity() {
 
     fun initswipe() {
         val simpleitemTouchCallback = object :
-            ItemTouchHelper.SimpleCallback(0, ItemTouchHelper.LEFT or ItemTouchHelper.RIGHT) {
+            ItemTouchHelper.SimpleCallback(0,
+                ItemTouchHelper.LEFT or ItemTouchHelper.RIGHT
+            ) {
             override fun onMove(
                 recyclerView: RecyclerView,
                 viewHolder: RecyclerView.ViewHolder,
@@ -67,7 +69,8 @@ class MainActivity : AppCompatActivity() {
             ): Boolean = false
 
             override fun onSwiped(viewHolder: RecyclerView.ViewHolder, direction: Int) {
-                val position = viewHolder.absoluteAdapterPosition
+                @Suppress("DEPRECATION")
+                val position = viewHolder.adapterPosition
 
                 if (direction == ItemTouchHelper.LEFT) {
                     GlobalScope.launch(Dispatchers.IO) {
@@ -92,6 +95,7 @@ class MainActivity : AppCompatActivity() {
 
                 if (actionState == ItemTouchHelper.ACTION_STATE_SWIPE) {
                     val itemView = viewHolder.itemView
+
                     val paint = Paint()
                     val icon: Bitmap
 
@@ -102,7 +106,8 @@ class MainActivity : AppCompatActivity() {
                         canvas.drawRect(
                             itemView.left.toFloat(),
                             itemView.top.toFloat(),
-                            itemView.left.toFloat() + dX, itemView.bottom.toFloat(), paint
+                            itemView.left.toFloat() + dX, itemView.bottom.toFloat(),
+                            paint
                         )
                         @Suppress("DEPRECATION")
                         canvas.drawBitmap(
@@ -111,6 +116,7 @@ class MainActivity : AppCompatActivity() {
                             itemView.top.toFloat() + (itemView.bottom.toFloat() - itemView.top.toFloat() - icon.height.toFloat()) / 2,
                             paint
                         )
+
                     } else {
                         icon = BitmapFactory.decodeResource(resources, R.drawable.cancel)
 

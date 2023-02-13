@@ -27,6 +27,10 @@ class Todoadapter(val list :List<TodoModel>):RecyclerView.Adapter<Todoadapter.To
          return list.size
     }
 
+    override fun getItemId(position: Int): Long {
+        return list[position].id
+    }
+
     class TodoViewHolder(itemView: View) : RecyclerView.ViewHolder(itemView) {
         fun bind(todoModel: TodoModel) {
             with(itemView){
@@ -45,13 +49,13 @@ class Todoadapter(val list :List<TodoModel>):RecyclerView.Adapter<Todoadapter.To
         private fun updateTime(time:Long) {
             val myformat = "h:mm a"
             val sdf= SimpleDateFormat(myformat)
-            itemView.txtShowTime.setText(sdf.format(Date(time)))
+            itemView.txtShowTime.text = sdf.format(Date(time))
         }
 
         private fun updateDate(date:Long) {
             val myformat = "EEE, d MMM yyyy"
             val sdf= SimpleDateFormat(myformat)
-            itemView.txtShowDate.setText(sdf.format(Date(date)))
+            itemView.txtShowDate.text = sdf.format(Date(date))
         }
     }
 }

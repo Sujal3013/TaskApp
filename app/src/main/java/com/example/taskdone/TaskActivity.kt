@@ -22,20 +22,21 @@ import kotlinx.coroutines.withContext
 import java.text.SimpleDateFormat
 
 
-const val DB_NAME="todo.db"
+const val DB_NAME = "todo.db"
+
 class TaskActivity : AppCompatActivity(), View.OnClickListener {
 
-    lateinit var myCalender:Calendar
+    lateinit var myCalender: Calendar
 
-    lateinit var datesetListener:DatePickerDialog.OnDateSetListener
-    lateinit var timeSetListener: TimePickerDialog.OnTimeSetListener
+    lateinit var datesetListener: DatePickerDialog.OnDateSetListener
+    lateinit var timeSetListener: OnTimeSetListener
 
-    var finalDate=0L
-    var finaltime=0L
+    var finalDate = 0L
+    var finaltime = 0L
 
-    private val labels = arrayListOf("Personal","Business","Studies","Household")
+    private val labels = arrayListOf("Personal", "Business", "Studies", "Household")
 
-    val db by lazy{
+    val db by lazy {
         todoDatabase.getDatabase(this)
     }
 
@@ -46,29 +47,31 @@ class TaskActivity : AppCompatActivity(), View.OnClickListener {
         Dateedt.setOnClickListener(this)
         timeedt.setOnClickListener(this)
         save.setOnClickListener(this)
+
         setUpSpinner()
     }
 
     private fun setUpSpinner() {
-        val adapter=ArrayAdapter<String>(this,android.R.layout.simple_spinner_dropdown_item,labels)
+        val adapter = ArrayAdapter(this, android.R.layout.simple_spinner_dropdown_item, labels)
         labels.sort()
-        spinner.adapter=adapter
+        spinner.adapter = adapter
 
     }
 
     override fun onClick(v: View) {
-        when(v.id){
+        when (v.id) {
             R.id.Dateedt -> {
                 setListener()
             }
-            R.id.timeedt ->{
+            R.id.timeedt -> {
                 setTimeListener()
             }
-            R.id.save->{
+            R.id.save -> {
                 saveTodo()
             }
         }
     }
+
     private fun saveTodo() {
         val category = spinner.selectedItem.toString()
         val title = titleInplay.editText?.text.toString()
@@ -91,53 +94,55 @@ class TaskActivity : AppCompatActivity(), View.OnClickListener {
     }
 
     private fun setTimeListener() {
-        myCalender= Calendar.getInstance()
-        timeSetListener=TimePickerDialog.OnTimeSetListener{ _: TimePicker, hourofDay:Int, minute:Int ->
-            myCalender.set(Calendar.HOUR_OF_DAY,hourofDay)
-            myCalender.set(Calendar.MINUTE,minute)
+        myCalender = Calendar.getInstance()
+        timeSetListener = OnTimeSetListener { _: TimePicker, hourofDay: Int, minute: Int ->
+            myCalender.set(Calendar.HOUR_OF_DAY, hourofDay)
+            myCalender.set(Calendar.MINUTE, minute)
             updateTime()
 
         }
 
-        val timePickerDialog=TimePickerDialog(
-            this,timeSetListener,myCalender.get(Calendar.HOUR_OF_DAY),
-            myCalender.get(Calendar.MINUTE),false
+        val timePickerDialog = TimePickerDialog(
+            this, timeSetListener, myCalender.get(Calendar.HOUR_OF_DAY),
+            myCalender.get(Calendar.MINUTE), false
         )
         timePickerDialog.show()
     }
 
     private fun updateTime() {
         val myformat = "h:mm a"
-        val sdf=SimpleDateFormat(myformat)
-        finaltime=myCalender.time.time
+        val sdf = SimpleDateFormat(myformat)
+        finaltime = myCalender.time.time
         Dateedt.setText(sdf.format(myCalender.time))
     }
 
     private fun setListener() {
-        myCalender= Calendar.getInstance()
+        myCalender = Calendar.getInstance()
 
-        datesetListener=DatePickerDialog.OnDateSetListener{_:DatePicker,year:Int,month:Int,dayOfMonth:Int ->
-            myCalender.set(Calendar.YEAR,year)
-            myCalender.set(Calendar.MONTH,month)
-            myCalender.set(Calendar.DAY_OF_MONTH,dayOfMonth)
-            updateDate()
+        datesetListener =
+            DatePickerDialog.OnDateSetListener { _: DatePicker, year: Int, month: Int, dayOfMonth: Int ->
+                myCalender.set(Calendar.YEAR, year)
+                myCalender.set(Calendar.MONTH, month)
+                myCalender.set(Calendar.DAY_OF_MONTH, dayOfMonth)
+                updateDate()
 
-        }
+            }
 
-        val datePickerDialog=DatePickerDialog(
-            this,datesetListener,myCalender.get(Calendar.YEAR),
-            myCalender.get(Calendar.MONTH),myCalender.get(Calendar.DAY_OF_MONTH)
+        val datePickerDialog = DatePickerDialog(
+            this, datesetListener, myCalender.get(Calendar.YEAR),
+            myCalender.get(Calendar.MONTH), myCalender.get(Calendar.DAY_OF_MONTH)
         )
-        datePickerDialog.datePicker.minDate=System.currentTimeMillis()
+        datePickerDialog.datePicker.minDate = System.currentTimeMillis()
         datePickerDialog.show()
     }
 
     private fun updateDate() {
         //TUE ,8 JAN 2023
         val myformat = "EEE, d MMM yyyy"
-        val sdf=SimpleDateFormat(myformat)
-        finalDate=myCalender.time.time
+        val sdf = SimpleDateFormat(myformat)
+        finalDate = myCalender.time.time
         Dateedt.setText(sdf.format(myCalender.time))
-        timeedt.visibility=View.VISIBLE
+
+        timeedt.visibility = View.VISIBLE
     }
 }
