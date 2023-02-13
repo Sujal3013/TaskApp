@@ -26,6 +26,7 @@ const val DB_NAME="todo.db"
 class TaskActivity : AppCompatActivity(), View.OnClickListener {
 
     lateinit var myCalender:Calendar
+
     lateinit var datesetListener:DatePickerDialog.OnDateSetListener
     lateinit var timeSetListener: TimePickerDialog.OnTimeSetListener
 
@@ -44,6 +45,7 @@ class TaskActivity : AppCompatActivity(), View.OnClickListener {
 
         Dateedt.setOnClickListener(this)
         timeedt.setOnClickListener(this)
+        save.setOnClickListener(this)
         setUpSpinner()
     }
 

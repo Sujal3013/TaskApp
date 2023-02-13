@@ -11,6 +11,8 @@ import androidx.appcompat.app.AppCompatActivity
 import android.os.Bundle
 import android.view.Menu
 import android.view.MenuItem
+import android.view.View
+import android.widget.SearchView
 import androidx.lifecycle.Observer
 import androidx.recyclerview.widget.ItemTouchHelper
 import androidx.recyclerview.widget.LinearLayoutManager
@@ -19,6 +21,9 @@ import com.example.taskdone.Database.todoDatabase
 import com.example.taskdone.adapter.Todoadapter
 import com.example.taskdone.modal.TodoModel
 import kotlinx.android.synthetic.main.activity_main.*
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.GlobalScope
+import kotlinx.coroutines.launch
 
 class MainActivity : AppCompatActivity() {
 
@@ -45,6 +50,10 @@ class MainActivity : AppCompatActivity() {
                 list.addAll(it)
                 adapter.notifyDataSetChanged()
             }
+            else{
+                list.clear()
+                adapter.notifyDataSetChanged()
+            }
         })
     }
 
@@ -56,6 +65,20 @@ class MainActivity : AppCompatActivity() {
                 viewHolder: RecyclerView.ViewHolder,
                 target: RecyclerView.ViewHolder
             ): Boolean = false
+
+            override fun onSwiped(viewHolder: RecyclerView.ViewHolder, direction: Int) {
+                val position = viewHolder.absoluteAdapterPosition
+
+                if (direction == ItemTouchHelper.LEFT) {
+                    GlobalScope.launch(Dispatchers.IO) {
+                        db.todoDao().deleteTask(adapter.getItemId(position))
+                    }
+                } else if (direction == ItemTouchHelper.RIGHT) {
+                    GlobalScope.launch(Dispatchers.IO) {
+                        db.todoDao().finishedTask(adapter.getItemId(position))
+                    }
+                }
+            }
 
             override fun onChildDraw(
                 canvas: Canvas,
@@ -70,7 +93,6 @@ class MainActivity : AppCompatActivity() {
                 if (actionState == ItemTouchHelper.ACTION_STATE_SWIPE) {
                     val itemView = viewHolder.itemView
                     val paint = Paint()
-                    val matrix = Matrix()
                     val icon: Bitmap
 
                     if (dX > 0) {
@@ -122,27 +144,59 @@ class MainActivity : AppCompatActivity() {
                 }
             }
 
-            override fun onSwiped(viewHolder: RecyclerView.ViewHolder, direction: Int) {
-                val position = viewHolder.absoluteAdapterPosition
-
-                if (direction == ItemTouchHelper.LEFT) {
-                    //DELETE
-                    db.todoDao().deleteTask(adapter.getItemId(position))
-                } else if (direction == ItemTouchHelper.RIGHT) {
-                    //FINISH
-                    db.todoDao().finishedTask(adapter.getItemId(position))
-                }
-            }
-
         }
         val itemTouchHelper=ItemTouchHelper(simpleitemTouchCallback)
         itemTouchHelper.attachToRecyclerView(todoRv)
     }
 
+
+
     override fun onCreateOptionsMenu(menu: Menu?): Boolean {
         menuInflater.inflate(R.menu.main_menu, menu)
+        val item= menu?.findItem(R.id.search)
+        val searchView=item?.actionView as SearchView
+        item.setOnActionExpandListener(object:MenuItem.OnActionExpandListener{
+            override fun onMenuItemActionExpand(item: MenuItem): Boolean {
+                displayTodo()
+                return true
+            }
+
+            override fun onMenuItemActionCollapse(item: MenuItem): Boolean {
+                displayTodo()
+                return true
+            }
+
+        })
+        searchView.setOnQueryTextListener(object:SearchView.OnQueryTextListener{
+            override fun onQueryTextSubmit(query: String?): Boolean {
+                return false
+            }
+
+            override fun onQueryTextChange(newText: String?): Boolean {
+                if(!newText.isNullOrEmpty()){
+                    displayTodo(newText)
+                }
+                return true
+            }
+
+        })
+
 
         return super.onCreateOptionsMenu(menu)
+    }
+
+    fun displayTodo(newText: String=""){
+        db.todoDao().getTask().observe(this, Observer {
+            if(it.isNotEmpty()){
+                list.clear()
+                list.addAll(
+                    it.filter{
+                        todo->todo.title.contains(newText,true)
+                    }
+                )
+                adapter.notifyDataSetChanged()
+            }
+        })
     }
 
     override fun onOptionsItemSelected(item: MenuItem): Boolean {
@@ -152,6 +206,10 @@ class MainActivity : AppCompatActivity() {
             }
         }
         return super.onOptionsItemSelected(item)
+    }
+
+    fun openNewTask(view: View) {
+        startActivity(Intent(this, TaskActivity::class.java))
     }
 
 }
